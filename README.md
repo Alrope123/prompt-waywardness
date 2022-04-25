@@ -7,12 +7,12 @@ This code provides commands to run the models and reproduce the numbers reported
 Please leave issues for any questions about the paper or the code.
 
 If you find our code or paper useful, please cite the paper:
-```
-@article{ khashabi2021waywardness,
-  title={ PROMPT WAYWARDNESS: The Curious Case of Discretized Interpretation of Continuous Prompts },
+```bibtex 
+@inproceedings{khashabi2021waywardness,
+  title={{PROMPT WAYWARDNESS: The Curious Case of Discretized Interpretation of Continuous Prompts}},
   author = {Khashabi, Daniel and Lyu, Shane and Min, Sewon and Qin, Lianhui and Richardson, Kyle and Singh, Sameer and Welleck, Sean and Hajishirzi, Hannaneh and Khot, Tushar and Sabharwal, Ashish and Choi, Yejin},
-  journal={ arXiv preprint },
-  year={ 2021 }
+  booktitle={Proceedings of NAACL},
+  year={2022}
 }
 ```
 
