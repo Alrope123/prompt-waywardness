@@ -35,8 +35,8 @@ You can run the channel model and the direct model for each of these methods. Pl
 ## Installation
 
 ```
-$ conda create -n lm-prompt python=3.8
-$ conda activate lm-prompt
+$ conda create -n waywardness python=3.8
+$ conda activate waywardness
 $ conda install pytorch=1.7.1 -c pytorch
 $ pip install transformers==4.3.0
 ```
