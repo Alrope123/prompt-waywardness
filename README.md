@@ -2,7 +2,7 @@
 
 This includes an original implementation "[PROMPT WAYWARDNESS: The Curious Case of Discretized Interpretation of Continuous Prompts][paper]" by [Daniel Khashabi][danielk], [Xinxi Lyu][xinxil], [Sewon Min][sewonm], [Lianhui Qin][lianhuiq], [Kyle Richardson][kyler], [Sameer Singh][sameers], [Sean Welleck][seanw], [Hannaneh Hajishirzi][hannanehh], [Tushar Khot][tushark], [Ashish Sabharwal][ashishs], [Yejin Choi][yejinc].
 
-This code provides commands to run the models and reproduce the numbers reported in the paper, based on the [Channel LM Prompting][channel-lm-code] codebase.
+This code provides commands to run the models and reproduce the numbers reported in the paper. The code is taken and modified from the [Channel LM Prompting][channel-lm-code] repo.
 
 Please leave issues for any questions about the paper or the code.
 
@@ -59,6 +59,8 @@ Optionally, you can specify arguments such as
 
 **To check the data:**
 You can see the list of five datasets used in the paper by `ls data/k-shot`. Each dataset consists of five different splits based on five different splits (test sets are the same).
+
+We also used sentences sampled from [The PILE](https://pile.eleuther.ai/), stored under the `prompts` directory. Please make sure to cite [their paper](https://arxiv.org/abs/2101.00027) when you use this data.
 
 
 ## Default Commands
@@ -128,6 +130,7 @@ Run the [default commands](#default-commands), but fix `--gamma 0.01,0.005,0.003
 
 [channel-lm-code]: https://github.com/princeton-nlp/LM-BFF/blob/main/tools/generate_k_shot_data.py
 [lm-bff-paper]: https://arxiv.org/abs/2012.15723
+[lm-bff-code]: https://github.com/princeton-nlp/LM-BFF
 [zhang-paper]: https://arxiv.org/abs/1509.01626
 [zhang-data]: http://goo.gl/JyCnZq
 
