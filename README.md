@@ -10,7 +10,7 @@ If you find our code or paper useful, please cite the paper:
 ```bibtex 
 @inproceedings{khashabi2021waywardness,
   title={{PROMPT WAYWARDNESS: The Curious Case of Discretized Interpretation of Continuous Prompts}},
-  author = {Khashabi, Daniel and Lyu, Shane and Min, Sewon and Qin, Lianhui and Richardson, Kyle and Singh, Sameer and Welleck, Sean and Hajishirzi, Hannaneh and Khot, Tushar and Sabharwal, Ashish and Choi, Yejin},
+  author = {Khashabi, Daniel and Lyu, Xinxi and Min, Sewon and Qin, Lianhui and Richardson, Kyle and Singh, Sameer and Welleck, Sean and Hajishirzi, Hannaneh and Khot, Tushar and Sabharwal, Ashish and Choi, Yejin},
   booktitle={Proceedings of NAACL},
   year={2022}
 }
@@ -35,8 +35,8 @@ You can run the channel model and the direct model for each of these methods. Pl
 ## Installation
 
 ```
-$ conda create -n lm-prompt python=3.8
-$ conda activate lm-prompt
+$ conda create -n waywardness python=3.8
+$ conda activate waywardness
 $ conda install pytorch=1.7.1 -c pytorch
 $ pip install transformers==4.3.0
 ```

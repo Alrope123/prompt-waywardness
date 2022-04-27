@@ -66,8 +66,7 @@ PROMPT_DICT = {
         "agnews": ["agnews_0", "agnews_1", "agnews_2", "agnews_3", "agnews_4"],
         "trec": ["trec_0", "trec_1", "trec_2", "trec_3", "trec_4"],
         "subj": ["subj_0", "subj_1", "subj_2", "subj_3", "subj_4"]
-    },
-    "TEST": ['prompt00', 'prompt01', 'prompt02']
+    }
 }
 
 
@@ -127,22 +126,22 @@ def main(logger, args):
             prompt_names = PROMPT_DICT[args.prompt_group][args.task]
         else:
             prompt_names = PROMPT_DICT[args.prompt_group]
-        prompts = [load_prompt(args.prompts_dir, prompt_name, int(args.pile_len)) for prompt_name in prompt_names]
+        prompts = [(prompt_name, load_prompt(args.prompts_dir, prompt_name, int(args.pile_len))) for prompt_name in prompt_names]
     elif args.prompt_task is not None:
         assert args.prompt_tune and args.init_method == "manual"
-        prompts = [load_prompt(args.prompts_dir, args.prompt_task, int(args.pile_len))]
+        prompts = [(args.prompt_task, load_prompt(args.prompts_dir, args.prompt_task, int(args.pile_len)))]
     else:
-        prompts = [None]
+        prompts = [(None, None)]
 
     if args.prompt_group is not None: 
         total_results = {"accuracy": [], "prompt-f1": []}
-    for prompt in prompts:
+    for prompt_name, prompt in prompts:
         gamma_results = []
         for gamma in gammas:
             seed_results = []
             for tseed in tseeds:
-                acc, f1, mapped_prompt, norm_distance, mapped_acc, mapped_f1 = run(logger, args.do_train, args.do_zeroshot,
-                                args.task, train_task, args.prompt_task,
+                acc, f1, mapped_prompt, norm_distance = run(logger, args.do_train, args.do_zeroshot,
+                                args.task, train_task, prompt_name,
                                 k, seed, tseed,
                                 args.out_dir, args.split,
                                 tokenizer, model, train_data, dev_data,
@@ -189,6 +188,7 @@ def main(logger, args):
         logger.info("Prompt_F1 = %.2f" % (best_results["prompt_f1"]))
     
     if args.prompt_group is not None:
+        logger.info("========================================================================")
         logger.info("Results for task {} for {} prompts:".format(args.task, args.prompt_group))
         logger.info("Accuracy = %.1f" % (100 * np.average([total_results["accuracy"]])))
         logger.info("Prompt_F1 = %.2f" % (np.average(total_results["prompt-f1"])))
@@ -287,6 +287,12 @@ def run(logger, do_train, do_zeroshot, task, train_task, prompt_task,
         checkpoints = [os.path.join(out_dir, "model-{}.pt".format(num_training_steps))]
 
     mapping = None
+
+    # automatically train if checkpoint not found
+    if do_check and not os.path.exists(cache_paths[0]) or not os.path.exists(checkpoints[0]):
+        logger.info("Didn't find the checkpoint, have to train...")
+        do_train = True
+        do_check = False
 
     if do_train and (head_tune or not do_check):
 
@@ -411,38 +417,38 @@ def run(logger, do_train, do_zeroshot, task, train_task, prompt_task,
 
         logger.info(cache_path)
 
+        if checkpoint is not None and not os.path.exists(checkpoint):
+            logger.info("checkpoint %s not found..." % checkpoint)
+            assert False
+
+        if checkpoint is None and model is not None and do_zeroshot:
+            logger.info("Reusing the loaded model...")
+            pass
+        else:
+            logger.info("Loading the model")
+            torch.cuda.empty_cache()
+            del model
+            model = load_checkpoint(gpt2, checkpoint,
+                                    prompt_tune=prompt_tune,
+                                    head_tune=head_tune,
+                                    transform_tune=transform_tune,
+                                    n_prefix=n_prefix,
+                                    mapping=mapping)
+            
+            if prefix_type == "discrete":
+                prefix_ids, aux_loss = model.transformer.wte.map_to_discrete()
+                logger.info("The mapped discrete prefix is: {}".format(tokenizer.decode(prefix_ids)))
+                logger.info("The norm distance is: {}".format(aux_loss))
+
+            model = model.cuda()
+            model.eval()
+            logger.info("Finished loading the model")
+
         # if there is a cache, load it
         if os.path.exists(cache_path):
             with open(cache_path, "rb") as f:
                 losses = pkl.load(f)
         else:
-            if checkpoint is not None and not os.path.exists(checkpoint):
-                logger.info("checkpoint %s not found..." % checkpoint)
-                assert False
-
-            if checkpoint is None and model is not None and do_zeroshot:
-                logger.info("Reusing the loaded model...")
-                pass
-            else:
-                logger.info("Loading the model")
-                torch.cuda.empty_cache()
-                del model
-                model = load_checkpoint(gpt2, checkpoint,
-                                        prompt_tune=prompt_tune,
-                                        head_tune=head_tune,
-                                        transform_tune=transform_tune,
-                                        n_prefix=n_prefix,
-                                        mapping=mapping)
-                
-                if prefix_type == "discrete":
-                    prefix_ids, aux_loss = model.transformer.wte.map_to_discrete()
-                    logger.info("The mapped discrete prefix is: {}".format(tokenizer.decode(prefix_ids)))
-                    logger.info("The norm distance is: {}".format(aux_loss))
-
-                model = model.cuda()
-                model.eval()
-                logger.info("Finished loading the model")
-
             losses = []
             for input_tensor in input_tensors:
                 losses.append(inference(model,
@@ -484,18 +490,7 @@ def run(logger, do_train, do_zeroshot, task, train_task, prompt_task,
         logger.info("The mapped discrete prefix is: {}".format(tokenizer.decode(prefix_ids)))
         logger.info("The norm distance is: {}".format(aux_loss))
 
-        logger.info("Evaluating mapped discrete prompt")
-        mapped_losses = []
-        for i, input_tensor in enumerate(input_tensors):
-            mapped_losses.append(inference(model,
-                                    input_tensor,
-                                    batch_size * 8,
-                                    bad=bad))
-        mapped_acc, mapped_f1 = evaluate(dev_data, {str(i): loss for i, loss in enumerate(mapped_losses)})
-        logger.info(mapped_acc)
-        logger.info(mapped_f1)
-
-        return acc, f1, tokenizer.decode(prefix_ids), aux_loss.item(), mapped_acc, mapped_f1
+        return acc, f1, tokenizer.decode(prefix_ids), aux_loss.item()
 
 
 def evaluate(dev_data, label_losses, is_classification=True):
