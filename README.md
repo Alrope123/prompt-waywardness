@@ -22,8 +22,6 @@ If you find our code or paper useful, please cite the paper:
 2. [Download & Preprocess Data](#download-and-preprocess-data)
 3. [Default Commands](#default-commands)
 4. [Reproducing Main Results](#reproducing-main-results) (Section 4.2 of the paper)
-    * [Prompt tuning constrained by projections](#prompt-tuning-constrained-by-projections)
-    * [Unconstrained prompt tuning](#unconstrained-prompt-tuning)
 5. [Reproducing Analysis](#reproducing-analysis) (Section 4.3 of the paper)
     * [Effect of Gamma](#effect-of-gamma)
     * [Effect of Prompt Length](#effect-of-prompt-length)
@@ -67,12 +65,14 @@ We also used sentences sampled from [The PILE](https://pile.eleuther.ai/), store
 ```
 python3 main.py \ 
     --task {SST-2|sst-5|agnews|trec|subj} \
-    --prompt_group {NI|PILE|TRUE} \
+    --prompt_group {NI|PILE} \
     --split test \
     --data_dir data \
     --out_dir out \
     --method direct \
-    --prompt_tune 
+    --prompt_tune \
+    --do_train \
+    --gamma {0.01|0}
 ```
 Useful notes:.
 * You can adjust `--batch_size` if you run into OOM issue (default is `8`).
@@ -85,13 +85,7 @@ Useful notes:.
 
 This section is for reproducing the results of the main experiments in Section 4.2 of the [paper][paper].
 
-### Prompt tuning constrained by projections
-
 Run the [default commands](#default-commands).
-
-### Unconstrained Prompt Tuning
-
-Run the [default commands](#default-commands) but add `--gamma 0`.
 
 ## Reproducing Analysis
 
