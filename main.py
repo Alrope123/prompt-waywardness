@@ -136,6 +136,7 @@ def main(logger, args):
     if args.prompt_group is not None: 
         total_results = {"accuracy": [], "prompt-f1": []}
     for prompt_name, prompt in prompts:
+        logger.info("Getting results for prompt: {}".format(prompt_name))
         gamma_results = []
         for gamma in gammas:
             seed_results = []
@@ -180,10 +181,11 @@ def main(logger, args):
                 best_idx = i
                 break
         best_results = sorted_gamma_results[best_idx]
-        total_results["accuracy"].append(best_results["acc"])
-        total_results["prompt-f1"].append(best_results["prompt_f1"])
+        if args.prompt_group is not None:
+            total_results["accuracy"].append(best_results["acc"])
+            total_results["prompt-f1"].append(best_results["prompt_f1"])
 
-        logger.info("Results for prompt: {}".format(prompt))
+        logger.info("Results for prompt: {}".format(prompt_name))
         logger.info("Accuracy = %.1f" % (100 * best_results["acc"]))
         logger.info("Prompt_F1 = %.2f" % (best_results["prompt_f1"]))
     
@@ -289,7 +291,7 @@ def run(logger, do_train, do_zeroshot, task, train_task, prompt_task,
     mapping = None
 
     # automatically train if checkpoint not found
-    if do_check and not os.path.exists(cache_paths[0]) or not os.path.exists(checkpoints[0]):
+    if (do_check or not do_train) and (not os.path.exists(cache_paths[0]) or not os.path.exists(checkpoints[0])):
         logger.info("Didn't find the checkpoint, have to train...")
         do_train = True
         do_check = False
@@ -546,7 +548,7 @@ if __name__ == '__main__':
     parser.add_argument("--seed", type=str, default="100")
     parser.add_argument("--train_seed", type=str, default="1,10,100")
     parser.add_argument("--lr", type=float, default=0.01)
-    parser.add_argument("--gamma", type=str, default=0.01)
+    parser.add_argument("--gamma", type=str, default="0.01")
     parser.add_argument("--warmup_steps", type=int, default=0)
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--num_training_steps", type=int, default=2000)

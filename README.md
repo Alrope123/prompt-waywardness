@@ -65,14 +65,19 @@ You can see the list of five datasets used in the paper by `ls data/k-shot`. Eac
 ```
 python3 main.py \ 
     --task {SST-2|sst-5|agnews|trec|subj} \
-    --prompt_group {NI|PILE|TRUE} 
+    --prompt_group {NI|PILE|TRUE} \
     --split test \
     --data_dir data \
     --out_dir out \
     --method direct \
-    --prompt_tune \
-    --do_train    
+    --prompt_tune 
 ```
+Useful notes:.
+* You can adjust `--batch_size` if you run into OOM issue (default is `8`).
+* To train with individual prompt, you can replace `--prompt_group` with `--prompt_task`.
+* Once you train the model, you can specify `--do_check` to load the existing checkpoint without retraining the model.
+* Please note that GPU parallization is not implemented for inference.
+* To save a log file, please specify `--log_file`.
 
 ## Reproducing Main Results
 
@@ -86,11 +91,6 @@ Run the [default commands](#default-commands).
 
 Run the [default commands](#default-commands) but add `--gamma 0`.
 
-Useful notes:.
-* You can adjust `--batch_size` if you run into OOM issue (default is `32`).
-* Please note that GPU parallization is not implemented for inference.
-* To save a log file, please specify `--log_file`.
-
 ## Reproducing Analysis
 
 This section is for reproducing the results of the analysis experiments in Section 4.3 of the [paper][paper].
@@ -101,15 +101,15 @@ Run the [default commands](#default-commands), but fix `--prompt_group NI` and v
 
 ### Effect of prompt length
 
-Run the [default commands](#default-commands), but fix `--prompt_group NI` and vary `--pile_len {4|7|14|28|56}`.
+Run the [default commands](#default-commands), but fix `--prompt_group PILE` and vary `--pile_len {4|7|14|28|56}`.
 
 ### Effect of model size
 
-Run the [default commands](#default-commands), but fix `--prompt_group NI` and vary `--pile_len {4|7|14|28|56}`.
+Run the [default commands](#default-commands), but fix `--prompt_group PILE --gamma 0.01,0.005,0.003` and vary `--gpt2 gpt2-{small|medium|large|xl} `.
 
 ### Projection onto true task definitions
 
-Run the [default commands](#default-commands), but fix `--gamma 0.01,0.005,0.003` and vary `--prompt_group {PILE|TRUE} --gpt2 gpt2-{small|medium|large|xl} `.
+Run the [default commands](#default-commands), but fix `--prompt_group TRUE`.
 
 
 [paper]: https://arxiv.org/abs/2112.08348

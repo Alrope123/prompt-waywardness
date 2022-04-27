@@ -1,0 +1,1 @@
+python3 main.py --task SST-2 --prompt_task prompt01 --split test --data_dir data --out_dir out --method direct --prompt_tune --do_train --gamma 0.005 --pile_len 4 --num_training_steps 20 --eval_period 5 --batch_size 2
